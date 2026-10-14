@@ -1,0 +1,147 @@
+name: Build
+
+# Every push to main builds installers for macOS, Windows and Linux and puts
+# them on the "Testversion" release. Tags like v1.0.0 create a draft release.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos
+            os: macos-latest
+            args: --target universal-apple-darwin
+            targets: aarch64-apple-darwin,x86_64-apple-darwin
+          - name: windows
+            os: windows-latest
+            args: ""
+            targets: ""
+          - name: linux
+            os: ubuntu-22.04
+            args: ""
+            targets: ""
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.targets }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: ${{ matrix.name }}
+
+      - name: Linux packages
+        if: matrix.name == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libxtst-dev libx11-dev
+
+      - name: Tauri CLI
+        run: npm install
+
+      - name: Unit tests
+        if: matrix.name == 'linux'
+        working-directory: src-tauri
+        shell: bash
+        run: cargo test 2>&1 | tee ../test-${{ matrix.name }}.log; exit ${PIPESTATUS[0]}
+
+      - name: Build installers
+        shell: bash
+        run: npx tauri build ${{ matrix.args }} 2>&1 | tee build-${{ matrix.name }}.log; exit ${PIPESTATUS[0]}
+
+      - name: Collect installers
+        shell: bash
+        run: |
+          mkdir -p dist
+          find src-tauri/target -path '*release/bundle/*' \( -name '*.dmg' -o -name '*-setup.exe' -o -name '*.deb' -o -name '*.AppImage' \) -exec cp {} dist/ \;
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slotboard-${{ matrix.name }}
+          path: dist/*
+          if-no-files-found: error
+
+      # Makes compiler errors readable without a GitHub login (branch ci-log-<os>).
+      - name: Publish log on failure
+        if: failure()
+        shell: bash
+        run: |
+          git config user.name "slotboard-ci"
+          git config user.email "slotboard-ci@users.noreply.github.com"
+          cp build-${{ matrix.name }}.log /tmp/build.log 2>/dev/null || echo "no build log" > /tmp/build.log
+          cp test-${{ matrix.name }}.log /tmp/test.log 2>/dev/null || true
+          git checkout --orphan ci-log-${{ matrix.name }}
+          git rm -rf --cached . > /dev/null
+          cp /tmp/build.log build.log
+          [ -f /tmp/test.log ] && cp /tmp/test.log test.log
+          git add -f build.log
+          [ -f test.log ] && git add -f test.log
+          git commit -m "CI log ${{ matrix.name }} for ${{ github.sha }}"
+          git push -f origin ci-log-${{ matrix.name }}
+
+  release:
+    name: release
+    needs: build
+    if: always() && needs.build.result != 'cancelled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Move test tag to this commit
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          git tag -f test-build
+          git push -f origin test-build
+
+      - name: Test release
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: test-build
+          name: Slotboard – Testversion
+          prerelease: true
+          files: dist/*
+          body: |
+            Automatisch gebaute Testversion vom letzten Stand (${{ github.sha }}).
+            Automatically built test version.
+
+            - macOS: `Slotboard_…_universal.dmg`
+            - Windows: `Slotboard_…_x64-setup.exe`
+            - Linux: `.deb` oder `.AppImage`
+
+      - name: Draft release
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Slotboard ${{ github.ref_name }}
+          draft: true
+          files: dist/*
+          generate_release_notes: true

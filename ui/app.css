@@ -1,0 +1,348 @@
+/* Slotboard – setup & help window
+   Cool aluminium grey like a keyboard, keycaps as the one visual element,
+   cadmium yellow means "this slot holds something". */
+
+:root {
+  --paper: #eef0f2;
+  --ink: #1b1d21;
+  --graphite: #686d76;
+  --hair: #d9dce1;
+  --cap: #ffffff;
+  --cap-line: #d3d6dc;
+  --cap-edge: #b9bec6;
+  --signal: #ffc21a;
+  --signal-edge: #d99e00;
+  --danger: #c8372a;
+  --focus: #2b59ff;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #18191c;
+    --ink: #eceef1;
+    --graphite: #9b9fa8;
+    --hair: #2e3035;
+    --cap: #2a2c31;
+    --cap-line: #3a3d44;
+    --cap-edge: #0c0d0f;
+    --signal: #ffc21a;
+    --signal-edge: #a87a00;
+    --danger: #ff6b5e;
+    --focus: #7b9bff;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Ubuntu, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+  overflow: hidden;
+}
+
+.dragbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 36px;
+  z-index: 10;
+}
+
+main {
+  height: 100%;
+  padding: 52px 40px 28px;
+}
+
+.page {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+.page.active { display: flex; }
+
+h1 {
+  margin: 0 0 14px;
+  font-size: 27px;
+  line-height: 1.18;
+  font-weight: 650;
+  letter-spacing: -0.022em;
+  max-width: 17em;
+  text-wrap: balance;
+}
+
+.lead {
+  margin: 0 0 22px;
+  font-size: 16px;
+  max-width: 30em;
+}
+
+.quiet {
+  margin: 0 0 16px;
+  color: var(--graphite);
+  font-size: 13.5px;
+  max-width: 32em;
+}
+
+/* ---- keycaps ---- */
+
+kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--cap-line);
+  border-bottom-width: 3px;
+  border-bottom-color: var(--cap-edge);
+  border-radius: 7px;
+  background: var(--cap);
+  color: var(--ink);
+  font: 600 15px/1 ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+}
+kbd.mod { min-width: 44px; font-size: 16px; }
+
+.shortcuts {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 24px;
+}
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.plus, .ellipsis {
+  color: var(--graphite);
+  font-weight: 500;
+  padding: 0 3px;
+}
+.what { font-weight: 550; }
+
+.shortcuts.compact kbd { height: 28px; min-width: 28px; font-size: 13px; border-radius: 6px; }
+.shortcuts.compact kbd.mod { min-width: 36px; }
+.shortcuts.compact { gap: 8px; margin-bottom: 18px; }
+
+/* the slot board: ten keys, yellow when a slot holds something */
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+  margin: 6px 0 24px;
+}
+.board .key {
+  position: relative;
+  height: 44px;
+  border: 1px solid var(--cap-line);
+  border-bottom-width: 4px;
+  border-bottom-color: var(--cap-edge);
+  border-radius: 8px;
+  background: var(--cap);
+  font: 600 15px/1 ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  display: grid;
+  place-items: center;
+  color: var(--graphite);
+  transition: background-color .25s ease, border-color .25s ease, transform .12s ease;
+}
+.board .key.filled {
+  background: var(--signal);
+  border-color: var(--signal-edge);
+  color: #1b1d21;
+}
+.board .key.just {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+  margin-top: 2px;
+}
+
+/* ---- steps & status ---- */
+
+.steps {
+  margin: 0 0 18px;
+  padding-left: 22px;
+  display: grid;
+  gap: 4px;
+}
+.steps li::marker { color: var(--graphite); font-variant-numeric: tabular-nums; }
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 14px;
+  font-weight: 550;
+}
+.status .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--graphite);
+  flex: none;
+}
+.status.waiting .dot { animation: pulse 1.4s ease-in-out infinite; }
+.status.ok .dot { background: var(--signal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 30%, transparent); }
+.status.warn .dot { background: var(--danger); }
+.status.paused .dot { background: var(--graphite); }
+
+@keyframes pulse { 50% { opacity: .25; } }
+
+.trouble {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  color: var(--graphite);
+}
+.trouble summary {
+  cursor: pointer;
+  width: max-content;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--cap-line);
+}
+.trouble p { margin: 8px 0 10px; max-width: 34em; }
+.trouble .row { display: flex; gap: 8px; }
+
+/* ---- try it ---- */
+
+.task { margin: 0 0 16px; }
+.task-text {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0 0 8px;
+}
+.task-text kbd { height: 22px; min-width: 22px; padding: 0 5px; font-size: 12px; border-radius: 5px; border-bottom-width: 2px; vertical-align: 1px; }
+.check {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 1.5px solid var(--cap-line);
+  display: grid;
+  place-items: center;
+}
+.task.done .check { background: var(--signal); border-color: var(--signal-edge); }
+.task.done .check::after {
+  content: "";
+  width: 6px;
+  height: 10px;
+  border: solid #1b1d21;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg);
+}
+.field {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--cap-line);
+  border-radius: 8px;
+  background: var(--cap);
+  color: var(--ink);
+  font: inherit;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.field:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+/* ---- controls ---- */
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 0;
+  cursor: pointer;
+  width: max-content;
+}
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch .track {
+  width: 36px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--cap-line);
+  position: relative;
+  transition: background-color .2s ease;
+}
+.switch .track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+  transition: transform .2s ease;
+}
+.switch input:checked + .track { background: var(--ink); }
+.switch input:checked + .track::after { transform: translateX(14px); background: var(--paper); }
+.switch input:focus-visible + .track { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.actions {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+button {
+  font: inherit;
+  font-weight: 550;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--cap-line);
+  background: var(--cap);
+  color: var(--ink);
+  cursor: pointer;
+}
+button:hover { border-color: var(--cap-edge); }
+button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+button.primary {
+  height: 40px;
+  padding: 0 22px;
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+button.primary:hover { opacity: .88; }
+button.link {
+  white-space: nowrap;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--graphite);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--cap-line);
+}
+button.link:hover { color: var(--ink); }
+
+.progress, .meta {
+  margin-left: auto;
+  color: var(--graphite);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.meta { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 0; white-space: nowrap; line-height: 1.35; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

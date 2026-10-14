@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Slotboard – 10 clipboard slots</title>
+  <meta name="description" content="10 clipboard slots, zero clutter. ⌘C + 1–0 to store, ⌘V + 1–0 to paste. Free and open source for macOS, Windows and Linux.">
+  <link rel="icon" href="icon.png">
+  <style>
+    :root {
+      --paper: #eef0f2; --ink: #1b1d21; --graphite: #686d76; --cap: #fff;
+      --cap-line: #d3d6dc; --cap-edge: #b9bec6; --signal: #ffc21a; --signal-edge: #d99e00; --focus: #2b59ff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --paper: #18191c; --ink: #eceef1; --graphite: #9b9fa8; --cap: #2a2c31; --cap-line: #3a3d44; --cap-edge: #0c0d0f; --signal-edge: #a87a00; --focus: #7b9bff; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+    header { display: flex; align-items: center; gap: 12px; padding: 28px 0; font-weight: 650; }
+    header img { width: 36px; height: 36px; }
+    header nav { margin-left: auto; display: flex; gap: 20px; font-weight: 500; }
+    a { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--cap-line); }
+    a:hover { text-decoration-color: currentColor; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+    .hero { padding: 64px 0 40px; }
+    h1 { font-size: clamp(40px, 7vw, 68px); line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 22px; font-weight: 700; max-width: 12em; }
+    .lead { font-size: 20px; max-width: 30em; margin: 0 0 40px; color: var(--graphite); }
+
+    .board { display: grid; grid-template-columns: repeat(10, 1fr); gap: clamp(4px, 1.2vw, 10px); margin: 0 0 48px; }
+    .key {
+      aspect-ratio: 1; display: grid; place-items: center; border-radius: 12px;
+      background: var(--cap); border: 1px solid var(--cap-line); border-bottom: 5px solid var(--cap-edge);
+      font: 600 clamp(15px, 2.6vw, 24px)/1 ui-rounded, "SF Pro Rounded", system-ui, sans-serif; color: var(--graphite);
+      transition: background-color .3s ease, border-color .3s ease, color .3s ease;
+    }
+    .key.on { background: var(--signal); border-color: var(--signal-edge); color: #1b1d21; }
+
+    .combos { display: grid; gap: 16px; margin: 0 0 56px; }
+    .combo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 19px; }
+    .keys { display: inline-flex; align-items: center; gap: 6px; }
+    kbd {
+      display: inline-grid; place-items: center; min-width: 40px; height: 40px; padding: 0 10px; border-radius: 8px;
+      background: var(--cap); border: 1px solid var(--cap-line); border-bottom: 3px solid var(--cap-edge);
+      font: 600 17px/1 ui-rounded, "SF Pro Rounded", system-ui, sans-serif; color: var(--ink);
+    }
+    .op { color: var(--graphite); padding: 0 2px; }
+    .combo b { font-weight: 600; }
+
+    .download { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 18px; }
+    .btn { display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--cap-line); background: var(--cap); }
+    .btn.main { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .note { color: var(--graphite); font-size: 15px; margin: 0 0 80px; }
+
+    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px 40px; padding: 48px 0 72px; border-top: 1px solid var(--cap-line); }
+    .facts h2 { font-size: 18px; margin: 0 0 6px; letter-spacing: -0.01em; }
+    .facts p { margin: 0; color: var(--graphite); font-size: 16px; }
+    footer { padding: 28px 0 48px; color: var(--graphite); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+    @media (prefers-reduced-motion: reduce) { .key { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="icon.png" alt="">
+      <span>Slotboard</span>
+      <nav><a href="https://github.com/markuskoppeberlin-a11y/slotboard">GitHub</a><a href="https://github.com/markuskoppeberlin-a11y/slotboard/blob/main/ANLEITUNG.md">Deutsch</a></nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>10 clipboard slots, zero clutter.</h1>
+        <p class="lead">Copy and paste the way you always do. Add a digit and you have ten of them.</p>
+
+        <div class="board" aria-hidden="true">
+          <span class="key">1</span><span class="key">2</span><span class="key">3</span><span class="key">4</span><span class="key">5</span>
+          <span class="key">6</span><span class="key">7</span><span class="key">8</span><span class="key">9</span><span class="key">0</span>
+        </div>
+
+        <div class="combos">
+          <div class="combo"><span class="keys"><kbd>⌘</kbd><kbd>C</kbd><span class="op">+</span><kbd>1</kbd><span class="op">–</span><kbd>0</kbd></span><b>stores the selection in a slot</b></div>
+          <div class="combo"><span class="keys"><kbd>⌘</kbd><kbd>V</kbd><span class="op">+</span><kbd>1</kbd><span class="op">–</span><kbd>0</kbd></span><b>pastes it anywhere</b></div>
+        </div>
+
+        <div class="download">
+          <a class="btn main" href="https://github.com/markuskoppeberlin-a11y/slotboard/releases">Download for Mac</a>
+          <a class="btn" href="https://github.com/markuskoppeberlin-a11y/slotboard/releases">Windows</a>
+          <a class="btn" href="https://github.com/markuskoppeberlin-a11y/slotboard/releases">Linux</a>
+        </div>
+        <p class="note">Free and open source. Ctrl instead of ⌘ on Windows and Linux.</p>
+      </section>
+
+      <section class="facts">
+        <div><h2>Nothing new to learn</h2><p>No window, no history, no pop-ups. Without a digit, ⌘C and ⌘V behave exactly as before.</p></div>
+        <div><h2>Everything fits in a slot</h2><p>Plain and formatted text, images, files and app content like Figma layers.</p></div>
+        <div><h2>Your clipboard stays yours</h2><p>After pasting from a slot, the normal clipboard is put back.</p></div>
+        <div><h2>Private by design</h2><p>Works offline, records no keystrokes, ignores passwords, forgets everything when you quit.</p></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 Markus Koppe</span>
+      <a href="https://github.com/markuskoppeberlin-a11y/slotboard/blob/main/PRIVACY.md">Privacy</a>
+      <a href="https://github.com/markuskoppeberlin-a11y/slotboard/blob/main/LICENSE">MIT License</a>
+    </footer>
+  </div>
+  <script>
+    // One small moment: slots 1, 4 and 7 fill up as if someone just stored something.
+    (function () {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        [0, 3, 6].forEach(function (i) { document.querySelectorAll(".key")[i].classList.add("on"); });
+        return;
+      }
+      var keys = document.querySelectorAll(".key");
+      [0, 3, 6].forEach(function (i, n) { setTimeout(function () { keys[i].classList.add("on"); }, 500 + n * 420); });
+    })();
+  </script>
+</body>
+</html>

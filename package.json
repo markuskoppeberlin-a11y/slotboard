@@ -1,0 +1,14 @@
+{
+  "name": "slotboard",
+  "private": true,
+  "version": "0.1.0",
+  "description": "10 clipboard slots. ⌘C + digit to store, ⌘V + digit to paste.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.9.0"
+  }
+}

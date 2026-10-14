@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Slotboard</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="dragbar" data-tauri-drag-region></div>
+
+  <main id="app" aria-live="polite">
+    <!-- 1 · Welcome -->
+    <section class="page" data-page="welcome">
+      <h1 data-t="welcomeTitle"></h1>
+      <p class="lead" data-t="welcomeLead"></p>
+      <div class="shortcuts">
+        <div class="shortcut">
+          <span class="combo"><kbd class="mod" data-mod></kbd><kbd>C</kbd><span class="plus">+</span><kbd class="digit">1</kbd><span class="ellipsis">–</span><kbd class="digit">0</kbd></span>
+          <span class="what" data-t="store"></span>
+        </div>
+        <div class="shortcut">
+          <span class="combo"><kbd class="mod" data-mod></kbd><kbd>V</kbd><span class="plus">+</span><kbd class="digit">1</kbd><span class="ellipsis">–</span><kbd class="digit">0</kbd></span>
+          <span class="what" data-t="paste"></span>
+        </div>
+      </div>
+      <p class="quiet" data-t="welcomeNote"></p>
+      <footer class="actions">
+        <button class="primary" data-action="next" data-t="setUp"></button>
+        <span class="progress"></span>
+      </footer>
+    </section>
+
+    <!-- 2 · Access (macOS) -->
+    <section class="page" data-page="access">
+      <h1 data-t="accessTitle"></h1>
+      <p class="lead" data-t="accessLead"></p>
+      <p class="quiet" data-t="accessPrivacy"></p>
+      <ol class="steps">
+        <li data-t="accessStep1"></li>
+        <li data-t="accessStep2"></li>
+        <li data-t="accessStep3"></li>
+      </ol>
+      <p class="status" data-status>
+        <span class="dot"></span><span data-status-text></span>
+      </p>
+      <details class="trouble">
+        <summary data-t="troubleTitle"></summary>
+        <p data-t="troubleText"></p>
+        <div class="row">
+          <button data-action="open-settings" data-t="openSettings"></button>
+          <button data-action="restart" data-t="restart"></button>
+        </div>
+      </details>
+      <footer class="actions">
+        <button class="primary" data-action="request" data-t="allowAccess"></button>
+        <span class="progress"></span>
+      </footer>
+    </section>
+
+    <!-- 2 · Not supported (Linux on Wayland) -->
+    <section class="page" data-page="unsupported">
+      <h1 data-t="waylandTitle"></h1>
+      <p class="lead" data-t="waylandLead"></p>
+      <footer class="actions">
+        <button class="primary" data-action="close" data-t="close"></button>
+      </footer>
+    </section>
+
+    <!-- 3 · Try it -->
+    <section class="page" data-page="try">
+      <h1 data-t="tryTitle"></h1>
+      <div class="task" data-task="store">
+        <p class="task-text"><span class="check" aria-hidden="true"></span><span data-t-html="tryStore"></span></p>
+        <input class="field" data-sample readonly spellcheck="false" aria-label="">
+      </div>
+      <div class="task" data-task="paste">
+        <p class="task-text"><span class="check" aria-hidden="true"></span><span data-t-html="tryPaste"></span></p>
+        <input class="field" data-target spellcheck="false" autocomplete="off" aria-label="">
+      </div>
+      <div class="board" data-board aria-hidden="true"></div>
+      <footer class="actions">
+        <button class="primary" data-action="next" data-t="continue"></button>
+        <span class="progress"></span>
+      </footer>
+    </section>
+
+    <!-- 4 · Done / help -->
+    <section class="page" data-page="done">
+      <h1 data-done-title></h1>
+      <p class="status" data-status>
+        <span class="dot"></span><span data-status-text></span>
+      </p>
+      <div class="board" data-board aria-hidden="true"></div>
+      <div class="shortcuts compact">
+        <div class="shortcut">
+          <span class="combo"><kbd class="mod" data-mod></kbd><kbd>C</kbd><span class="plus">+</span><kbd class="digit">1</kbd><span class="ellipsis">–</span><kbd class="digit">0</kbd></span>
+          <span class="what" data-t="store"></span>
+        </div>
+        <div class="shortcut">
+          <span class="combo"><kbd class="mod" data-mod></kbd><kbd>V</kbd><span class="plus">+</span><kbd class="digit">1</kbd><span class="ellipsis">–</span><kbd class="digit">0</kbd></span>
+          <span class="what" data-t="paste"></span>
+        </div>
+      </div>
+      <p class="quiet" data-t="menuHint"></p>
+      <label class="switch">
+        <input type="checkbox" data-autostart>
+        <span class="track" aria-hidden="true"></span>
+        <span data-t="autostart"></span>
+      </label>
+      <footer class="actions">
+        <button class="primary" data-action="finish" data-t="done"></button>
+        <button class="link" data-action="clear" data-t="clearSlots" hidden></button>
+        <button class="link" data-action="replay" data-t="replay" hidden></button>
+        <span class="meta"><span data-version></span><button class="link" data-action="website">GitHub</button></span>
+      </footer>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

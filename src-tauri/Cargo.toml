@@ -1,0 +1,36 @@
+[package]
+name = "slotboard"
+version = "0.1.0"
+description = "10 clipboard slots. ⌘C + digit to store, ⌘V + digit to paste."
+authors = ["Markus Koppe"]
+license = "MIT"
+repository = "https://github.com/markuskoppeberlin-a11y/slotboard"
+edition = "2021"
+rust-version = "1.82"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2.9", features = ["tray-icon", "image-png"] }
+tauri-plugin-autostart = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+tauri-plugin-single-instance = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSArray", "NSData", "NSString", "NSLocale"] }
+objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "NSPasteboard", "NSPasteboardItem"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+arboard = "3.6"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
