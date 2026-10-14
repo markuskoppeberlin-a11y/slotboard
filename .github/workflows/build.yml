@@ -71,6 +71,45 @@ jobs:
         shell: bash
         run: npx tauri build ${{ matrix.args }} 2>&1 | tee build-${{ matrix.name }}.log; exit ${PIPESTATUS[0]}
 
+      - name: macOS check (signature + start test)
+        if: matrix.name == 'macos'
+        shell: bash
+        run: |
+          APP=$(find src-tauri/target -name 'Slotboard.app' -type d | head -1)
+          BIN="$APP/Contents/MacOS/$(ls "$APP/Contents/MacOS" | head -1)"
+          {
+            echo "== app: $APP"
+            echo "== binary: $BIN"
+            codesign -dv --verbose=2 "$APP" 2>&1
+            codesign --verify --deep --strict "$APP" 2>&1 && echo "signature ok"
+            lipo -info "$BIN"
+            plutil -p "$APP/Contents/Info.plist"
+            "$BIN" > run.log 2>&1 &
+            PID=$!
+            sleep 15
+            if kill -0 $PID 2>/dev/null; then echo "START TEST: running after 15s"; kill $PID; else echo "START TEST: exited"; fi
+            echo "== app output"; cat run.log
+            echo "== crash reports"; ls -t ~/Library/Logs/DiagnosticReports 2>/dev/null | head -5
+          } > macos-check.log 2>&1
+          cat macos-check.log
+          grep -q "START TEST: running" macos-check.log
+
+      - name: Publish macOS check log
+        if: always() && matrix.name == 'macos'
+        shell: bash
+        run: |
+          [ -f macos-check.log ] || exit 0
+          cp macos-check.log /tmp/macos-check.log
+          git config user.name "slotboard-ci"
+          git config user.email "slotboard-ci@users.noreply.github.com"
+          git stash -u -q || true
+          git checkout -q --orphan ci-log-macos-check
+          git rm -rf -q --cached . > /dev/null
+          cp /tmp/macos-check.log macos-check.log
+          git add -f macos-check.log
+          git commit -q -m "macOS check for ${{ github.sha }}"
+          git push -q -f origin ci-log-macos-check
+
       - name: Collect installers
         shell: bash
         run: |
