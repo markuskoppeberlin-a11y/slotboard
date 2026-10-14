@@ -24,7 +24,7 @@ jobs:
       matrix:
         include:
           - name: macos
-            os: macos-latest
+            os: macos-15
             args: --target universal-apple-darwin
             targets: aarch64-apple-darwin,x86_64-apple-darwin
           - name: windows
@@ -37,9 +37,9 @@ jobs:
             targets: ""
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -108,7 +108,7 @@ jobs:
     if: always() && needs.build.result != 'cancelled'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/download-artifact@v4
         with:
