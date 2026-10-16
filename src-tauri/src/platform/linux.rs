@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 
 use super::Permission;
 use crate::engine::Msg;
-use crate::filter::{Key, KeyEvent, KeyFilter, KeyKind, Mods, COPY_WINDOW};
+use crate::filter::{Key, KeyEvent, KeyFilter, KeyKind, Mods};
 
 // ---------------------------------------------------------------------------
 // Raw Xlib / XTest / XRecord bindings
@@ -389,7 +389,7 @@ fn control_loop(dpy: *mut Display, keys: Keys, rx: Receiver<Ctl>) {
                 XNextEvent(dpy, event.as_mut_ptr());
             }
             // Safety net: never keep Ctrl+digit grabbed longer than needed.
-            if digits_grabbed && grabbed_at.elapsed() > COPY_WINDOW + Duration::from_millis(500) {
+            if digits_grabbed && grabbed_at.elapsed() > Duration::from_secs(30) {
                 for code in &keys.digits {
                     grab_ctrl(dpy, root, *code, false);
                 }

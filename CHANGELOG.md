@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- ⌘V + digit no longer has a time limit: Slotboard waits as long as ⌘ (Ctrl) is held. Releasing it without a digit pastes normally.
+- Same for ⌘C + digit.
+
 ## 0.1.0 – first test version
 
 - ⌘C + digit stores the clipboard in one of ten slots, ⌘V + digit pastes it (Ctrl on Windows/Linux).

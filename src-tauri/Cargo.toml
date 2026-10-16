@@ -1,6 +1,6 @@
 [package]
 name = "slotboard"
-version = "0.1.0"
+version = "0.1.1"
 description = "10 clipboard slots. ⌘C + digit to store, ⌘V + digit to paste."
 authors = ["Markus Koppe"]
 license = "MIT"

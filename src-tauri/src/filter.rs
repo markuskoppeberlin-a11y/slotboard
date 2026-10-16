@@ -9,21 +9,18 @@
 //! * primary+C → normal copy, never swallowed. While primary stays held,
 //!   tapping a digit stores the clipboard in that slot (the digit is
 //!   swallowed).
-//! * primary+V → swallowed for a short moment. If a digit follows while
-//!   primary is still held, the slot is pasted instead. Otherwise the engine
-//!   re-sends a normal primary+V (after [`PASTE_WINDOW`], or immediately when
-//!   primary is released or another key is pressed).
+//! * primary+V → swallowed. As long as primary stays held there is no time
+//!   limit: a digit pastes that slot. Releasing primary without a digit (or
+//!   pressing another key) makes the engine send a normal primary+V.
 //!
 //! The filter must stay fast and must never panic: on macOS and Windows it
 //! runs inside the operating system's keyboard callback.
 
 use std::time::{Duration, Instant};
 
-/// How long after primary+C a digit still counts as "store in slot".
-pub const COPY_WINDOW: Duration = Duration::from_millis(3000);
-
-/// How long after primary+V we wait for a digit before doing a normal paste.
-pub const PASTE_WINDOW: Duration = Duration::from_millis(250);
+/// Safety net: how long after primary+C (with primary still held) a digit
+/// still counts as "store in slot". Releasing primary ends it right away.
+pub const COPY_WINDOW: Duration = Duration::from_secs(30);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Key {
@@ -88,8 +85,8 @@ pub enum Action {
     CopyArmed,
     /// Store the clipboard in slot `0..=9` (slot 0 = key "1", slot 9 = key "0").
     SaveSlot(u8),
-    /// primary+V was swallowed. The engine must send a normal paste after
-    /// [`PASTE_WINDOW`] unless `PasteSlot` arrives first.
+    /// primary+V was swallowed. The engine waits for `PasteSlot` (digit) or
+    /// `PasteFlush` (normal paste).
     PasteArmed,
     /// A digit followed primary+V: paste slot `0..=9` instead.
     PasteSlot(u8),
@@ -169,12 +166,6 @@ impl KeyFilter {
                 self.copy_armed_at = None;
             }
         }
-        if let Some(at) = self.paste_armed_at {
-            // The engine has already sent the normal paste by now.
-            if now.saturating_duration_since(at) > PASTE_WINDOW {
-                self.paste_armed_at = None;
-            }
-        }
 
         match ev.kind {
             KeyKind::ModifiersChanged => {
@@ -220,12 +211,8 @@ impl KeyFilter {
             Key::V => {
                 if mods.only_primary() {
                     if repeat {
-                        // Holding ⌘V: stay quiet while we wait, then let the
-                        // normal repeat-paste through.
-                        if self.paste_armed_at.is_some() {
-                            return Decision::swallow();
-                        }
-                        return Decision::PASS;
+                        // Holding ⌘V down: nothing to do until a digit or release.
+                        return Decision::swallow();
                     }
                     // A second ⌘V while waiting: the engine sends the first
                     // paste and starts waiting again.
@@ -423,13 +410,14 @@ mod tests {
     }
 
     #[test]
-    fn digit_after_paste_window_is_a_normal_shortcut() {
+    fn paste_waits_as_long_as_primary_is_held() {
         let mut f = KeyFilter::new();
         let t0 = Instant::now();
         f.handle(&KeyEvent::down(Key::V, P), t0);
-        let later = t0 + PASTE_WINDOW + Duration::from_millis(5);
-        assert_eq!(f.handle(&KeyEvent::down(Key::Digit(1), P), later), Decision::PASS);
-        assert!(!f.is_paste_armed());
+        f.handle(&KeyEvent::up(Key::V, P), t0);
+        let much_later = t0 + Duration::from_secs(20);
+        let d = f.handle(&KeyEvent::down(Key::Digit(5), P), much_later);
+        assert_eq!(d, Decision { swallow: true, action: act(Action::PasteSlot(4)) });
     }
 
     #[test]
@@ -450,13 +438,15 @@ mod tests {
     }
 
     #[test]
-    fn holding_paste_repeats_after_window() {
+    fn holding_v_is_swallowed_until_digit() {
         let mut f = KeyFilter::new();
-        let t0 = Instant::now();
-        f.handle(&KeyEvent::down(Key::V, P), t0);
-        assert_eq!(f.handle(&KeyEvent::repeat(Key::V, P), t0), Decision { swallow: true, action: None });
-        let later = t0 + PASTE_WINDOW + Duration::from_millis(5);
-        assert_eq!(f.handle(&KeyEvent::repeat(Key::V, P), later), Decision::PASS);
+        let d = run(
+            &mut f,
+            &[KeyEvent::down(Key::V, P), KeyEvent::repeat(Key::V, P), KeyEvent::repeat(Key::V, P), KeyEvent::down(Key::Digit(2), P)],
+        );
+        assert_eq!(d[1], Decision { swallow: true, action: None });
+        assert_eq!(d[2], Decision { swallow: true, action: None });
+        assert_eq!(d[3].action, act(Action::PasteSlot(1)));
     }
 
     #[test]

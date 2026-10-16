@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 use tauri::AppHandle;
 
-use crate::filter::{Action, PASTE_WINDOW};
+use crate::filter::Action;
 use crate::platform::{self, clipboard, Permission};
 use crate::state::{Core, Slot, SLOT_COUNT};
 
@@ -25,6 +25,8 @@ pub enum Msg {
 const RESTORE_DELAY: Duration = Duration::from_millis(600);
 /// How long we wait for the app to finish copying after ⌘C.
 const COPY_SETTLE_MAX: Duration = Duration::from_millis(700);
+/// Safety net: if the key-release event got lost, drop a waiting paste.
+const PASTE_GIVE_UP: Duration = Duration::from_secs(30);
 const PERMISSION_POLL: Duration = Duration::from_millis(1000);
 const HOOK_RETRY: Duration = Duration::from_millis(2500);
 
@@ -68,7 +70,7 @@ impl Engine {
             let now = Instant::now();
             let mut deadline = self.last_permission_check + PERMISSION_POLL;
             if let Some(at) = self.pending_paste {
-                deadline = deadline.min(at + PASTE_WINDOW);
+                deadline = deadline.min(at + PASTE_GIVE_UP);
             }
             if let Some(r) = &self.pending_restore {
                 deadline = deadline.min(r.at);
@@ -85,9 +87,8 @@ impl Engine {
     fn run_timers(&mut self) {
         let now = Instant::now();
         if let Some(at) = self.pending_paste {
-            if now >= at + PASTE_WINDOW {
+            if now >= at + PASTE_GIVE_UP {
                 self.pending_paste = None;
-                self.normal_paste();
             }
         }
         if self.pending_restore.as_ref().is_some_and(|r| now >= r.at) {
