@@ -1,0 +1,37 @@
+== app: src-tauri/target/universal-apple-darwin/release/bundle/macos/Slotboard.app
+== binary: src-tauri/target/universal-apple-darwin/release/bundle/macos/Slotboard.app/Contents/MacOS/slotboard
+Executable=/Users/runner/work/slotboard/slotboard/src-tauri/target/universal-apple-darwin/release/bundle/macos/Slotboard.app/Contents/MacOS/slotboard
+Identifier=com.markuskoppe.slotboard
+Format=app bundle with Mach-O universal (x86_64 arm64)
+CodeDirectory v=20500 size=26746 flags=0x10002(adhoc,runtime) hashes=829+3 location=embedded
+Signature=adhoc
+Info.plist entries=16
+TeamIdentifier=not set
+Runtime Version=15.5.0
+Sealed Resources version=2 rules=13 files=1
+Internal requirements count=0 size=12
+signature ok
+Architectures in the fat file: src-tauri/target/universal-apple-darwin/release/bundle/macos/Slotboard.app/Contents/MacOS/slotboard are: x86_64 arm64 
+{
+  "CFBundleDevelopmentRegion" => "English"
+  "CFBundleDisplayName" => "Slotboard"
+  "CFBundleExecutable" => "slotboard"
+  "CFBundleIconFile" => "icon.icns"
+  "CFBundleIdentifier" => "com.markuskoppe.slotboard"
+  "CFBundleInfoDictionaryVersion" => "6.0"
+  "CFBundleName" => "Slotboard"
+  "CFBundlePackageType" => "APPL"
+  "CFBundleShortVersionString" => "0.1.1"
+  "CFBundleVersion" => "0.1.1"
+  "CSResourcesFileMapped" => 1
+  "LSApplicationCategoryType" => "public.app-category.productivity"
+  "LSMinimumSystemVersion" => "11.0"
+  "LSRequiresCarbon" => 1
+  "NSHighResolutionCapable" => 1
+  "NSHumanReadableCopyright" => "© 2026 Markus Koppe"
+}
+START TEST: running after 15s
+== app output
+/Users/runner/work/_temp/07911b7f-d952-4c8e-923c-39e3c72a2651.sh: line 16:  8123 Terminated: 15          "$BIN" > run.log 2>&1
+== crash reports
+Retired
